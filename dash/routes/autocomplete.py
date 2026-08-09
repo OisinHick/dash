@@ -15,14 +15,17 @@ autocomplete_models = {
 }
 
 
-@autocomplete.post('/')
+@autocomplete.route('/', methods=['GET', 'POST', 'OPTIONS'])
 async def complete(request):
+    if request.method == 'OPTIONS':
+        return response.text('', status=200)
+
     lang = request.args.get('language', 'en')
-    query = request.args.get('text')
+    query = request.args.get('text', '')
     limit = request.args.get('limit', 7)
     model = autocomplete_models.get(lang, autocomplete_models['en'])
 
-    if any(stop in query for stop in ['.', '?', '!']):
+    if not query or any(stop in query for stop in ['.', '?', '!']):
         return response.json([])
     elif query.count(' ') >= int(limit):
         return response.json([])
